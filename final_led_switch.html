@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThingSpeak Toggle Switch</title>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#f2f2f2;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    text-align:center;
+}
+
+h2{
+    margin-bottom:25px;
+}
+
+.switch{
+    position:relative;
+    display:inline-block;
+    width:80px;
+    height:40px;
+}
+
+.switch input{
+    display:none;
+}
+
+.slider{
+    position:absolute;
+    cursor:pointer;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:#d9534f;
+    transition:.4s;
+    border-radius:40px;
+}
+
+.slider:before{
+    position:absolute;
+    content:"";
+    height:32px;
+    width:32px;
+    left:4px;
+    bottom:4px;
+    background:white;
+    transition:.4s;
+    border-radius:50%;
+}
+
+input:checked + .slider{
+    background:#28a745;
+}
+
+input:checked + .slider:before{
+    transform:translateX(40px);
+}
+
+#status{
+    margin-top:20px;
+    font-size:22px;
+    font-weight:bold;
+    color:#d9534f;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>ThingSpeak Toggle</h2>
+
+    <label class="switch">
+        <input type="checkbox" id="toggle">
+        <span class="slider"></span>
+    </label>
+
+    <div id="status">OFF</div>
+
+</div>
+
+<script>
+
+const toggle = document.getElementById("toggle");
+const status = document.getElementById("status");
+
+toggle.addEventListener("change", function(){
+
+    let url;
+
+    if(this.checked){
+
+        status.innerHTML = "ON";
+        status.style.color = "#28a745";
+
+        url = "https://api.thingspeak.com/update?api_key=UA04BKVJUJG5JQB0&field3=1";
+
+    }
+    else{
+
+        status.innerHTML = "OFF";
+        status.style.color = "#d9534f";
+
+        url = "https://api.thingspeak.com/update?api_key=UA04BKVJUJG5JQB0&field3=0";
+
+    }
+
+    // Send the update without leaving this page
+    fetch(url)
+    .then(response => response.text())
+    .then(data => {
+        console.log("ThingSpeak Entry ID:", data);
+    })
+    .catch(error => {
+        console.log("Fetch failed, trying iframe...");
+
+        // Fallback if browser blocks fetch because of CORS
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = url;
+        document.body.appendChild(iframe);
+
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+        }, 1000);
+    });
+
+});
+
+</script>
+
+</body>
+</html>
